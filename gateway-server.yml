@@ -1,0 +1,45 @@
+server:
+  port: 8072
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    enabled-by-default: true
+
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eureka-server:8070/eureka/
+
+# spring gateway server 자동 라우팅 매핑 설정
+spring:
+  cloud:
+    gateway:
+      discovery.locator:
+        enabled: true
+        lowerCaseServiceId: true
+# spring gateway server 사용자 정의 라우팅 매핑 설정
+      routes:
+      - id: cloud-gw-service
+        uri: lb://cloud-gw-service
+        predicates:
+        - Path=/cgw/**
+        filters:
+        - RewritePath=/cgw/(?<path>.*), /$\{path}
+        - RemoveRequestHeader= Cookie,Set-Cookie
+      - id: cloud-gw2-service
+        uri: lb://cloud-gw2-service
+        predicates:
+        - Path=/cgw2/**
+        filters:
+        - RewritePath=/cgw2/(?<path>.*), /$\{path}
+        - RemoveRequestHeader= Cookie,Set-Cookie
+
+
+
